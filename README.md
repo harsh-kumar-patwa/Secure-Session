@@ -1,139 +1,193 @@
 
-# Secure-Session : Session Management System
+# Secure-Session: Session Management System
 
-## Overview
-A secure session management system handling user preferences and session tracking with support for both authenticated and guest users.
+## Table of Contents
+1. [Project Overview](#project-overview)  
+2. [Demo Video](#demo-video)  
+3. [Prerequisites](#prerequisites)  
+4. [Setup](#setup)  
+5. [Development](#development)  
+6. [Testing with Postman](#testing-with-postman)  
 
-## Technology Stack
-- Backend: Node.js & Express.js
-- Database: MongoDB
-- Session Store: connect-mongodb-session
-- Validation: Joi
-- Cookie Parser: cookie-parser
+---
 
-## Core Features
+## Project Overview
+A secure session management system that handles user preferences and session tracking, supporting both authenticated and guest users. Features include cross-device synchronization for authenticated users, automatic session expiration, and secure cookie management.
 
-### 1. Session Management
-- 30-minute automatic session expiry
-- Session tracking with activity logging
-- Cross-device synchronization for authenticated users
-- Automatic cleanup of expired sessions
+## Demo Video  
+[DEMO-VIDEO-LINK]
 
-### 2. User Preferences
-- Theme selection (dark/light)
-- Notification settings (enabled/disabled)
-- Language preferences
-- Secure cookie-based storage
+---
 
-### 3. Security Features
-- HttpOnly cookies
-- Secure cookies in production
-- SameSite cookie protection
-- Session expiration
-- Authentication middleware
+## Prerequisites
+1. **Node.js** (v14 or higher)  
+2. **MongoDB** (v4.4 or higher)  
+3. **Postman** (for API testing)  
+4. **curl** (optional, for command-line testing)
 
-## API Endpoints
+---
 
-### Authentication
-```
-POST /auth/register
-- Register new user
-Body: { username, password, preferences }
+## Setup
 
-POST /auth/login
-- User login
-Body: { username, password }
-
-GET /auth/logout
-- User logout
+### 1. Clone the Repository
+```bash
+git clone https://github.com/harsh-kumar-patwa/secure-session.git
+cd secure-session
 ```
 
-### Session Management
-```
-POST /session
-- Start new session
-Response: { sessionId, startTime }
-
-GET /session
-- Get session details
-Response: { pagesVisited, actions, startTime, duration }
-
-POST /session/page
-- Log page visit
-Body: { page, action }
-Query: ?page=1 (for pagination)
-
-DELETE /session
-- End current session
+### 2. Install Dependencies
+```bash
+npm install
 ```
 
-### Preferences
-```
-POST /preferences
-- Save user preferences
-Body: {
-    "theme": "dark|light",
-    "notifications": "enabled|disabled",
-    "language": "string"
-}
-
-GET /preferences
-- Retrieve user preferences
+### 3. Configure Environment Variables
+Create a `.env` file in the project root directory with the following content:
+```env
+MONGO_URI=mongodb://localhost:27017/secure-sessions
+SESSION_SECRET=your-secret-key
+PORT=3000
+NODE_ENV=development
 ```
 
-## Data Models
+### 4. Start the MongoDB Service
+Ensure MongoDB is running on your system. The application will automatically create necessary collections.
 
-### User Schema
-```javascript
+### 5. Start the Application
+```bash
+# Development mode
+npm run dev
+
+# Production mode
+npm start
+```
+
+---
+
+## Development
+
+### Setting Up the Development Environment
+1. **Install Development Dependencies**:  
+   ```bash
+   npm install --save-dev
+   ```
+2. **Run Application Locally**:  
+   ```bash
+   npm run dev
+   ```
+
+### Making Changes
+After making code changes:
+1. Restart the development server:
+   ```bash
+   npm run dev
+   ```
+
+---
+
+## Testing with Postman
+
+### Base URL
+- **Development**: `http://localhost:3000`
+- Replace `localhost` with your server address for production.
+
+### Endpoints to Test
+
+#### 1. Register a New User
+**Method**: POST  
+**URL**: `/auth/register`  
+**Body** (JSON):  
+```json
 {
-    username: String (required, unique),
-    password: String (required),
-    preferences: {
-        theme: String (default: 'light'),
-        notifications: String (default: 'enabled'),
-        language: String (default: 'English')
+    "username": "testuser",
+    "password": "securepassword",
+    "preferences": {
+        "theme": "light",
+        "notifications": "enabled",
+        "language": "English"
     }
 }
 ```
 
-### Session Schema
-```javascript
+#### 2. Login a User
+**Method**: POST  
+**URL**: `/auth/login`  
+**Body** (JSON):  
+```json
 {
-    userId: ObjectId (optional),
-    pagesVisited: [String],
-    actions: [{
-        actionType: String,
-        timestamp: Date
-    }],
-    startTime: Date,
-    lastActivity: Date,
-    sessionDuration: Number
+    "username": "testuser",
+    "password": "securepassword"
 }
 ```
 
-## Security Measures
-1. Session Timeout: Automatic expiry after 30 minutes of inactivity
-2. Secure Cookie Configuration:
-   - HttpOnly: Prevents client-side access
-   - Secure: HTTPS-only in production
-   - SameSite: Protection against CSRF attacks
-3. Regular cleanup of expired sessions
-4. Authentication middleware for protected routes
+#### 3. Start a New Session
+**Method**: POST  
+**URL**: `/session`  
+**Response**:  
+```json
+{
+    "sessionId": "unique-session-id",
+    "startTime": "2025-01-07T00:00:00Z"
+}
+```
+
+#### 4. Save User Preferences
+**Method**: POST  
+**URL**: `/preferences`  
+**Body** (JSON):  
+```json
+{
+    "theme": "dark",
+    "notifications": "enabled",
+    "language": "English"
+}
+```
+
+#### 5. End Current Session
+**Method**: DELETE  
+**URL**: `/session`
+
+---
+
+## Testing Workflow
+
+1. **Register a User** and verify the response.  
+2. **Log in** with the registered credentials.  
+3. **Start a Session** and save the session ID.  
+4. Update **user preferences** and verify changes.  
+5. **End the session** and confirm it cannot be accessed again.
+
+---
+
+## Security Features
+
+1. **Secure Cookies**:  
+   - Cookies are `HttpOnly` and `SameSite` by default.  
+   - Set `Secure` in production to enable HTTPS-only access.
+2. **Session Timeout**:  
+   - Sessions expire after 30 minutes of inactivity.
+3. **Authentication Middleware**:  
+   - Protects routes to ensure only authenticated users can access sensitive data.
+4. **Validation**:  
+   - Uses `Joi` for request body validation.
+
+---
 
 ## Error Handling
-- Standard HTTP status codes
-- Consistent error response format
-- Validation using Joi schema
-- Session expiry handling
 
+- **Standardized Responses**:  
+  All API errors return structured JSON responses with meaningful messages and status codes.  
 
-## Environment Configuration
-Required environment variables:
-```
-MONGO_URI=your-database-uri
-SESSION_SECRET=your-secret-key
-PORT=3000
-NODE_ENV=development|production
-```
+- **Example Error Response**:  
+  ```json
+  {
+      "error": "Session expired",
+      "statusCode": 401
+  }
+  ```
 
+---
+
+## Verifying Session Behavior
+- Monitor session activity directly in the MongoDB database.  
+- Check for automatic cleanup of expired sessions in the `sessions` collection.  
 
