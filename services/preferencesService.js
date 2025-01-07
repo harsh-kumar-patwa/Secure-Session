@@ -1,23 +1,55 @@
+const User = require('../models/User');
 const { validatePreferences } = require('../utils/validation');
 
 const savePreferences = async (user, preferencesData, res) => {
-    // Basic validation for demonstration
     const { error } = validatePreferences(preferencesData);
-    if (error) throw new Error(error.details[0].message);
+    if (error) throw { status: 400, message: error.details[0].message };
 
-    // For now, just saving to cookies
-    res.cookie('preferences', JSON.stringify(preferencesData), {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production', // Set to true in production
-        sameSite: 'strict'
-    });
+    try {
+        if (user) {
+            // Authenticated user
+            const userDoc = await User.findById(user._id);
+            if (!userDoc) throw { status: 404, message: 'User not found.' };
 
-    return preferencesData;
+            userDoc.preferences = preferencesData;
+            await userDoc.save();
+
+            // Update the cookie for authenticated users
+            res.cookie('preferences', JSON.stringify(preferencesData), {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'strict'
+            });
+
+            return userDoc.preferences;
+        } else {
+            // Guest user
+            res.cookie('preferences', JSON.stringify(preferencesData), {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'strict'
+            });
+            return preferencesData;
+        }
+    } catch (err) {
+        throw err;
+    }
 };
 
 const getPreferences = async (user, cookies) => {
-    // Getting preferences from cookies for now
-    return cookies.preferences ? JSON.parse(cookies.preferences) : {};
+    try {
+        if (user) {
+            // Authenticated user
+            const userDoc = await User.findById(user._id);
+            if (!userDoc) throw { status: 404, message: 'User not found.' };
+            return userDoc.preferences;
+        } else {
+            // Guest user
+            return cookies.preferences ? JSON.parse(cookies.preferences) : {};
+        }
+    } catch (err) {
+        throw err;
+    }
 };
 
 module.exports = { savePreferences, getPreferences };

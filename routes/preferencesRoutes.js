@@ -3,24 +3,25 @@ const router = express.Router();
 const preferencesService = require('../services/preferencesService');
 const { isAuthenticated } = require('../middleware/auth');
 
-// POST /preferences - Save user preferences (basic)
+// POST /preferences - Save user preferences
 router.post('/', isAuthenticated, async (req, res) => {
     try {
-        // For now, we'll just save preferences in cookies for guests
-        const preferences = await preferencesService.savePreferences(null, req.body, res);
+        // Save preferences using the updated service function
+        const preferences = await preferencesService.savePreferences(req.user, req.body, res);
         res.send(preferences);
     } catch (err) {
-        res.status(500).send(err.message);
+        res.status(err.status || 500).send(err.message);
     }
 });
 
-// GET /preferences - Retrieve preferences (basic)
+// GET /preferences - Retrieve saved preferences
 router.get('/', isAuthenticated, async (req, res) => {
     try {
-        const preferences = await preferencesService.getPreferences(null, req.cookies);
+        // Get preferences using the updated service function
+        const preferences = await preferencesService.getPreferences(req.user, req.cookies);
         res.send(preferences);
     } catch (err) {
-        res.status(500).send(err.message);
+        res.status(err.status || 500).send(err.message);
     }
 });
 
