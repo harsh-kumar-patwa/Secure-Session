@@ -1,9 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const sessionService = require('../services/sessionService');
+const { isAuthenticated } = require('../middleware/auth');
+
 
 // POST /session - Start a new session (basic implementation)
-router.post('/', async (req, res) => {
+router.post('/',isAuthenticated, async (req, res) => {
     try {
         const sessionData = await sessionService.startSession();
         req.session.sessionId = sessionData.sessionId; // Store sessionId in the session

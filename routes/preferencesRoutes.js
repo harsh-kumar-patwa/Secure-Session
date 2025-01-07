@@ -1,11 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const preferencesService = require('../services/preferencesService');
-
-// Placeholder for authentication middleware
-const isAuthenticated = (req, res, next) => {
-    next();
-};
+const { isAuthenticated } = require('../middleware/auth');
 
 // POST /preferences - Save user preferences (basic)
 router.post('/', isAuthenticated, async (req, res) => {
