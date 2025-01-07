@@ -5,6 +5,7 @@ const MongoDBStore = require('connect-mongodb-session')(session);
 const sessionRoutes = require('./routes/sessionRoutes');
 const cookieParser = require('cookie-parser');
 const preferencesRoutes = require('./routes/preferencesRoutes');
+const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 connectDB();
@@ -25,6 +26,7 @@ app.use(session({
     }
 }));
 app.use(cookieParser());
+app.use('/auth', authRoutes);
 
 app.use('/session', sessionRoutes);
 app.use('/preferences', preferencesRoutes);
