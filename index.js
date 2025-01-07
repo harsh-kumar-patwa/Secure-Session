@@ -3,6 +3,8 @@ const express = require('express');
 const connectDB = require('./config/db');
 const MongoDBStore = require('connect-mongodb-session')(session);
 const sessionRoutes = require('./routes/sessionRoutes');
+const cookieParser = require('cookie-parser');
+const preferencesRoutes = require('./routes/preferencesRoutes');
 
 const app = express();
 connectDB();
@@ -22,8 +24,10 @@ app.use(session({
         maxAge: 1000 * 60 * 30, 
     }
 }));
+app.use(cookieParser());
 
 app.use('/session', sessionRoutes);
+app.use('/preferences', preferencesRoutes);
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
 
