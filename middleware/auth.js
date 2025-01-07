@@ -20,4 +20,16 @@ const isAuthenticated = async (req, res, next) => {
     }
 };
 
-module.exports = { isAuthenticated };
+const allowGuests = async (req, res, next) => {
+    if (req.session.userId) {
+        try {
+            const user = await User.findById(req.session.userId);
+            req.user = user || null;
+        } catch (error) {
+            console.error('Error fetching user:', error);
+        }
+    }
+    next();
+};
+
+module.exports = { isAuthenticated, allowGuests };

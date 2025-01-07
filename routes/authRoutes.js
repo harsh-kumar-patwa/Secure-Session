@@ -8,7 +8,6 @@ router.post('/register', async (req, res) => {
     try {
         const { username, password, preferences } = req.body;
 
-        // Basic validation (consider using Joi for more complex validation)
         if (!username || !password) {
             return res.status(400).send('Username and password are required.');
         }
@@ -46,12 +45,11 @@ router.post('/login', async (req, res) => {
             return res.status(401).send('Invalid credentials.');
         }
 
-        const isMatch = await user.comparePassword(password);
+        const isMatch = (password === user.password);
         if (!isMatch) {
             return res.status(401).send('Invalid credentials.');
         }
 
-        // Set userId in the session
         req.session.userId = user._id;
 
         res.status(200).json({ message: "Logged in successfully", userId: user._id });

@@ -1,11 +1,10 @@
-// routes/sessionRoutes.js
 const express = require('express');
 const router = express.Router();
 const sessionService = require('../services/sessionService');
-const { isAuthenticated } = require('../middleware/auth');
+const { allowGuests } = require('../middleware/auth');
 
 // POST /session - Start a new session
-router.post('/', isAuthenticated, async (req, res) => {
+router.post('/', allowGuests, async (req, res) => {
     try {
         const sessionData = await sessionService.startSession(req.user);
         req.session.sessionId = sessionData.sessionId;
@@ -16,7 +15,7 @@ router.post('/', isAuthenticated, async (req, res) => {
 });
 
 // GET /session - Fetch session details
-router.get('/', isAuthenticated, async (req, res) => {
+router.get('/', allowGuests, async (req, res) => {
     try {
         const sessionData = await sessionService.getSessionDetails(req.session.sessionId);
         res.json(sessionData);
@@ -26,7 +25,7 @@ router.get('/', isAuthenticated, async (req, res) => {
 });
 
 // POST /session/page - Log a page visit and user actions
-router.post('/page', isAuthenticated, async (req, res) => {
+router.post('/page', allowGuests, async (req, res) => {
     try {
         const { page, action } = req.body;
         const pageData = await sessionService.logPageVisit(req.session.sessionId, page, action, req.query.page);
@@ -37,7 +36,7 @@ router.post('/page', isAuthenticated, async (req, res) => {
 });
 
 // DELETE /session - End the current session
-router.delete('/', isAuthenticated, async (req, res) => {
+router.delete('/', allowGuests, async (req, res) => {
     try {
         await sessionService.endSession(req.session.sessionId);
         req.session.destroy((err) => {

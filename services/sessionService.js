@@ -21,6 +21,13 @@ const getSessionDetails = async (sessionId) => {
     const session = await Session.findById(sessionId);
     if (!session) throw { status: 404, message: 'Session not found.' };
 
+    // Check for session expiry (30 minutes)
+    const inactivityDuration = (new Date() - session.lastActivity) / 1000 / 60;
+    if (inactivityDuration > 30) {
+        await session.deleteOne();
+        throw { status: 440, message: 'Session expired.' };
+    }
+
     // Update last activity time and duration
     session.lastActivity = new Date();
     session.sessionDuration = Math.round((session.lastActivity - session.startTime) / 1000 / 60);
@@ -71,4 +78,22 @@ const endSession = async (sessionId) => {
     }
 };
 
-module.exports = { startSession, getSessionDetails, logPageVisit, endSession };
+const getActiveSessions = async (userId) => {
+    if (!userId) return null;
+    return await Session.find({ userId });
+};
+
+// Add new function to cleanup expired sessions
+const cleanupExpiredSessions = async () => {
+    const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
+    await Session.deleteMany({ lastActivity: { $lt: thirtyMinutesAgo } });
+};
+
+module.exports = { 
+    startSession, 
+    getSessionDetails, 
+    logPageVisit, 
+    endSession,
+    getActiveSessions,
+    cleanupExpiredSessions 
+};
